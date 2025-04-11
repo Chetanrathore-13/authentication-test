@@ -26,10 +26,10 @@ export const register = async (req, res) => {
     const existingUser = await User.findOne({ email });
     if (existingUser)
       return res.status(400).json({ message: "User already exists" });
-
+    
     const hashedPassword = await bcrypt.hash(password, 12);
     const user = await User.create({ name, email, password: hashedPassword });
-
+    
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
 
@@ -61,26 +61,27 @@ export const login = async (req, res) => {
     const user = await User.findOne({ email });
     if (!user)
       return res.status(400).json({ message: "Invalid credentials" });
-
+    
     const isMatch = await bcrypt.compare(password, user.password);
+    
     if (!isMatch)
       return res.status(400).json({ message: "Invalid credentials" });
 
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
-
+    
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
       sameSite: "Strict",
       maxAge: 15 * 60 * 1000,
     });
-
+    
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       sameSite: "Strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-
+    
     res.json({
       message: "Login successful",
       user: { id: user._id, name: user.name, email: user.email },
