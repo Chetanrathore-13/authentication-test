@@ -8,12 +8,12 @@ const Login = () => {
   const setUser = useSetAtom(userAtom);
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
 
   const handleLogin = async () => {
     try {
-      const res = await axios.post("/login", { email, password }, { withCredentials: true });
+      const res = await axios.post("/tutor/login", { identifier, password }, { withCredentials: true });
 
       // Optional: Add logging to debug response
       console.log("Login response:", res.data);
@@ -40,8 +40,8 @@ const Login = () => {
           type="email"
           placeholder="Enter your email"
           className="w-full mb-4 p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-black"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          value={identifier}
+          onChange={(e) => setIdentifier(e.target.value)}
         />
 
         <label className="block text-sm font-medium mb-1">Password</label>

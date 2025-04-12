@@ -1,21 +1,26 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/userModel.js";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 // Generate Tokens
 const generateAccessToken = (user) => {
+    console.log( process.env.ACCESS_TOKEN_SECRET, process.env.ACCESS_TOKEN_EXPIRY)
   return jwt.sign(
     { id: user._id, name: user.name },
     process.env.ACCESS_TOKEN_SECRET,
-    { expiresIn: process.env.ACCESS_TOKEN_EXPIRES } // e.g., 15m
+    { expiresIn: process.env.ACCESS_TOKEN_EXPIRY } // e.g., 15m
   );
 };
 
 const generateRefreshToken = (user) => {
+    console.log( process.env.REFRESH_TOKEN_SECRET, process.env.REFRESH_TOKEN_EXPIRY)
   return jwt.sign(
     { id: user._id },
     process.env.REFRESH_TOKEN_SECRET,
-    { expiresIn: process.env.REFRESH_TOKEN_EXPIRES } // e.g., 7d
+    { expiresIn: process.env.REFRESH_TOKEN_EXPIRY } // e.g., 7d
   );
 };
 
@@ -26,13 +31,13 @@ export const register = async (req, res) => {
     const existingUser = await User.findOne({ email });
     if (existingUser)
       return res.status(400).json({ message: "User already exists" });
-    
     const hashedPassword = await bcrypt.hash(password, 12);
     const user = await User.create({ name, email, password: hashedPassword });
-    
+    console.log("yha tak agya")
+    console.log(user)
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
-
+    console.log("yha tak agya1")
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
       sameSite: "Strict",
@@ -44,7 +49,7 @@ export const register = async (req, res) => {
       sameSite: "Strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-
+    console.log("yha tak agya2")
     res.status(201).json({
       message: "User registered successfully",
       user: { id: user._id, name: user.name, email: user.email },
@@ -69,6 +74,9 @@ export const login = async (req, res) => {
 
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
+
+    user.refreshToken = refreshToken;
+    await user.save();
     
     res.cookie("accessToken", accessToken, {
       httpOnly: true,

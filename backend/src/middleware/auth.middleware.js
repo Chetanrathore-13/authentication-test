@@ -5,7 +5,7 @@ export const authenticate = async (req, res, next) => {
   try {
     const accessToken = req.cookies.accessToken;
     const refreshToken = req.cookies.refreshToken;
-
+   console.log(accessToken, refreshToken)
     // No token case
     if (!accessToken && !refreshToken) {
       return res.status(401).json({ message: "Authentication required" });
@@ -34,13 +34,13 @@ export const authenticate = async (req, res, next) => {
         const newAccessToken = jwt.sign(
           { id: user._id, name: user.name },
           process.env.ACCESS_TOKEN_SECRET,
-          { expiresIn: process.env.ACCESS_TOKEN_EXPIRES }
+          { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }
         );
 
         const newRefreshToken = jwt.sign(
           { id: user._id },
           process.env.REFRESH_TOKEN_SECRET,
-          { expiresIn: process.env.REFRESH_TOKEN_EXPIRES }
+          { expiresIn: process.env.REFRESH_TOKEN_EXPIRY }
         );
 
         // Set new cookies
