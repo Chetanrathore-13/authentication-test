@@ -3,6 +3,9 @@ import axios from "./axiosInstance";
 import { useSetAtom } from "jotai";
 import { userAtom } from "./store/auth";
 import { useNavigate } from "react-router-dom";
+import { useGoogleLogin } from "@react-oauth/google";
+import { googleLogin } from "./api"; // Adjust the import path as necessary
+import GoogleLoginSetup from "./GoogleLogin"; // Adjust the import path as necessary
 
 const Login = () => {
   const setUser = useSetAtom(userAtom);
@@ -29,6 +32,31 @@ const Login = () => {
       alert(err.response?.data?.message || "Login failed");
     }
   };
+  const responseGoogle = async (response) => {
+   try {
+    console.log("Google response:", response);
+    if(response["code"]){
+      const result = await googleLogin(response["code"]);
+      console.log("Google login result:", result);
+      if (result && result.user) {
+        setUser(result.user);
+        navigate("/dashboard");
+      } else {
+        alert("Invalid login response from server.");
+      }
+    }
+
+   } catch (error) {
+      console.log("Google login error:", error);
+      alert("Google login failed");
+   }
+    }
+
+  const GoogleLogin = useGoogleLogin({
+    onSuccess: responseGoogle,
+    onError: responseGoogle,
+    flow: "auth-code",
+  });
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100 px-4">
@@ -67,6 +95,13 @@ const Login = () => {
           Forgot Password? <a href="/forgot-password" className="text-blue-600">Reset</a>
         </p>
       </div>
+       {/* Login with Google */}
+      <div className="flex items-center justify-center mt-4">
+        <button onClick={GoogleLogin} href="/auth/google" className="bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 transition">
+          Login with Google
+        </button>
+      </div>
+      <GoogleLoginSetup />
     </div>
   );
 };
